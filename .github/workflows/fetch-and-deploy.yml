@@ -16,7 +16,7 @@ concurrency:
 
 # Grant the workflow the necessary permissions for deployment
 permissions:
-  contents: write  # switch between write/read if committing to repo
+  contents: read  # switch between write/read if committing to repo
   pages: write
   id-token: write
 
@@ -46,11 +46,11 @@ jobs:
         run: python scripts/fetch_images.py
 
       # This step saves the new images and JSON file to the Git branch.
-      - name: Commit generated files to repository
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          file_pattern: 'docs/images/ docs/images/*.json'
-          commit_message: "Update GOES images and JSON [skip ci]"
+      #- name: Commit generated files to repository
+      #  uses: stefanzweifel/git-auto-commit-action@v5
+      #  with:
+      #    file_pattern: 'docs/images/ docs/images/*.json'
+      #    commit_message: "Update GOES images and JSON [skip ci]"
 
       # --- GitHub Pages Deployment Steps ---
       - name: Configure GitHub Pages
