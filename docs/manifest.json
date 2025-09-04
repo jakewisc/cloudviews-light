@@ -1,6 +1,6 @@
 {
   "name": "cloudviews-light",
-  "short_name": "cloudviews-light",
+  "short_name": "cloudviews",
   "description": "View looping GOES satellite imagery for Wisconsin.",
   "start_url": "./index.html",
   "display": "standalone",
