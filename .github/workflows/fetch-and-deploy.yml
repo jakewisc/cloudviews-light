@@ -1,0 +1,68 @@
+# A single workflow that fetches images and deploys the site to GitHub Pages.
+name: Fetch and Deploy GOES Images
+
+# This workflow runs on a schedule and can also be triggered manually.
+on:
+  # Schedule to run every 15 minutes
+  schedule:
+    - cron: '*/15 * * * *'
+  # Allows for manual triggering from the Actions tab
+  workflow_dispatch:
+
+# Ensures that only one instance of this workflow runs at a time
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+# Grant the workflow the necessary permissions for deployment
+permissions:
+  contents: write  # switch between write/read if committing to repo
+  pages: write
+  id-token: write
+
+# The main job to fetch images and deploy the website
+jobs:
+  fetch-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Depth 1 fetches only the latest commit, reducing time
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip' # Simplified caching built into setup-python
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run fetch script
+        run: python scripts/fetch_images.py
+
+      # This step saves the new images and JSON file to the Git branch.
+      - name: Commit generated files to repository
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: 'docs/images/ docs/images/*.json'
+          commit_message: "Update GOES images and JSON [skip ci]"
+
+      # --- GitHub Pages Deployment Steps ---
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          # The folder containing the files to deploy
+          path: 'docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
