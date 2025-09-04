@@ -20,7 +20,7 @@ MAX_WORKERS = 10   # Number of concurrent download threads
 # --- Cropping Configuration ---
 # A tuple defining the crop area: (left, upper, right, lower).
 # These coordinates are set to isolate Wisconsin from the 2400x2400 UMV image.
-CROP_BOX = (1520, 266, 2400, 1146)
+CROP_BOX = (1550, 286, 2400, 1136)
 
 # --- Base Paths (relative to the script's location) ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
