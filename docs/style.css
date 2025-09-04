@@ -1,0 +1,90 @@
+/* Color Palette: White, Light Grey (#ededed), Blue (#2280de), Dark Blue (#134c92) */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    background-color: #ededed; /* Light Grey background */
+    color: #134c92; /* Dark Blue text for contrast */
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Styles for the region pages (e.g., umv.html) */
+h1 {
+    margin-bottom: 10px;
+    font-size: 1.8em;
+    color: #2280de; /* Main Blue title color */
+    border-bottom: 3px solid #2280de;
+    padding-bottom: 10px;
+}
+
+/* --- Image Container and Scaling --- */
+.image-container {
+    /* Center the container and limit its size relative to the viewport */
+    margin-bottom: 20px;
+    position: relative;
+}
+
+#goes-image {
+    max-width: 90vw;
+    max-height: 65vh;
+    height: auto; /* Maintain aspect ratio */
+    width: auto; /* Maintain aspect ratio */
+
+    display: none;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading Message Style */
+#loading-message {
+    color: #134c92;
+    padding: 50px 0;
+    font-size: 1.2em;
+}
+
+/* --- Scrubber Styling --- */
+.scrubber-container {
+    width: 80%;
+    max-width: 700px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+#scrubber {
+    width: 100%;
+    cursor: pointer;
+    accent-color: #2280de;
+}
+
+/* --- Playback Controls Styling --- */
+.controls-container {
+    margin-bottom: 40px;
+    display: none;
+    gap: 15px; /* Space between buttons */
+    justify-content: center;
+}
+
+.controls-container button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+    background-color: #2280de; /* Main Blue */
+    color: white;
+}
+
+.controls-container button:hover {
+    background-color: #134c92; /* Dark Blue */
+}
+
+.controls-container button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
