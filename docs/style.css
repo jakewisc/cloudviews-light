@@ -59,6 +59,7 @@ h1 {
     width: 100%;
     cursor: pointer;
     accent-color: #2280de;
+    touch-action: manipulation;
 }
 
 /* --- Playback Controls Styling --- */
@@ -78,6 +79,7 @@ h1 {
     transition: background-color 0.3s, opacity 0.3s;
     background-color: #2280de; /* Main Blue */
     color: white;
+    touch-action: manipulation;
 }
 
 .controls-container button:hover {
