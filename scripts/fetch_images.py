@@ -13,9 +13,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # --- Constants ---
 IMAGE_SIZE_FILTER = "2400x2400.jpg"
-MAX_IMAGES_TO_KEEP = 60
-WEBP_QUALITY = 80  # WebP compression quality (0-100)
+MAX_IMAGES_TO_KEEP = 48  # 4 hour sequence
+WEBP_QUALITY = 90  # WebP compression quality (0-100)
 MAX_WORKERS = 10   # Number of concurrent download threads
+
+# --- Cropping Configuration ---
+# A tuple defining the crop area: (left, upper, right, lower).
+# These coordinates are set to isolate Wisconsin from the 2400x2400 UMV image.
+CROP_BOX = (1500, 256, 2400, 1156)
 
 # --- Base Paths (relative to the script's location) ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,7 +36,7 @@ JSON_FILE = os.path.join(ROOT_DIR, "docs", "images", f"images_{REGION_NAME}.json
 
 def download_image(file_name, base_url, save_dir):
     """
-    Downloads a single image file, converts it to WebP, and saves it.
+    Downloads a single image file, crops it, converts it to WebP, and saves it.
     Returns the local path of the saved WebP file if successful, otherwise None.
     """
     webp_filename = file_name.replace(".jpg", ".webp")
@@ -49,9 +54,13 @@ def download_image(file_name, base_url, save_dir):
 
         image_data = io.BytesIO(r.content)
         img = Image.open(image_data)
+
+        # Crop the image to the specified coordinates
+        img = img.crop(CROP_BOX)
+
         img.save(local_webp_path, 'webp', quality=WEBP_QUALITY)
 
-        logging.info(f"Downloaded and converted {file_name} to {webp_filename}.")
+        logging.info(f"Downloaded, cropped, and converted {file_name} to {webp_filename}.")
         return local_webp_path
 
     except requests.exceptions.RequestException as req_error:
