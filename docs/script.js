@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Zoom Feature State ---
     let zoomWrapper; // To be created dynamically
     let isZooming = false;
+    let imageRectCache = null; // To store image dimensions during zoom
 
     // --- Animation Control Functions ---
     
@@ -205,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         event.preventDefault();
         isZooming = true;
+        imageRectCache = goesImage.getBoundingClientRect();
         imageContainer.setPointerCapture(event.pointerId); // Capture pointer for consistent events
         applyZoom(event);
     }
@@ -219,11 +221,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         isZooming = false;
         imageContainer.releasePointerCapture(event.pointerId);
+        imageRectCache = null; 
         resetZoom();
     }
 
     function applyZoom(event) {
-        const rect = goesImage.getBoundingClientRect();
+        const rect = imageRectCache;
+        if (!rect) return; // Safety check
 
         // 1. Calculate pointer position relative to the image
         const x = event.clientX - rect.left;
