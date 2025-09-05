@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scriptTag = document.getElementById('main-script');
     const imageContainer = document.querySelector('.image-container');
     const zoomWrap = document.getElementById('zoom-wrap');
+    const transformTarget = zoomWrap || goesImage; // wrapper preferred (avoids Safari blanking)
 
     // --- Configuration ---
     const ANIMATION_FPS = 5;
@@ -17,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const JSON_PATH = scriptTag.dataset.regionJson;
     // --- Full-image zoom config ---
     const ZOOM_SCALE = 2.0; // tweak to taste (e.g., 1.9–2.2)
+    // Shrink the active control region by this inset on all sides (in CSS px)
+    const CONTROL_INSET_PX = 80; // try 60–120 to taste
 
     // --- State Variables ---
     let imagePaths = []; 
@@ -112,22 +115,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Magnification Functions ---
     
     function applyZoomAt(e) {
-        const rect = zoomWrap.getBoundingClientRect();
+        const rect = transformTarget.getBoundingClientRect();
         
-        // Position relative to wrapper (which we’re transforming)
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
+        // Build a smaller "control box" inside the visible area
+        const insetX = Math.min(CONTROL_INSET_PX, rect.width / 2 - 1);
+        const insetY = Math.min(CONTROL_INSET_PX, rect.height / 2 - 1);
+        const ctrlLeft = rect.left + insetX;
+        const ctrlTop = rect.top + insetY;
+        const ctrlWidth = Math.max(2, rect.width - 2 * insetX);
+        const ctrlHeight = Math.max(2, rect.height - 2 * insetY);
         
-        // Clamp within bounds to avoid Safari bugs with negative origins
-        x = Math.max(0, Math.min(x, rect.width));
-        y = Math.max(0, Math.min(y, rect.height));
+        // Clamp finger to the control box
+        const px = Math.max(ctrlLeft, Math.min(e.clientX, ctrlLeft + ctrlWidth));
+        const py = Math.max(ctrlTop, Math.min(e.clientY, ctrlTop + ctrlHeight));
         
-        // Use percentages so it’s stable even while scaled
-        const ox = (x / rect.width) * 100;
-        const oy = (y / rect.height) * 100;
+        // Normalize within the control box to 0..1 and map to transform-origin
+        const nx = (px - ctrlLeft) / ctrlWidth;
+        const ny = (py - ctrlTop) / ctrlHeight;
         
-        zoomWrap.style.transformOrigin = `${ox}% ${oy}%`;
-        zoomWrap.style.transform = `scale(${ZOOM_SCALE})`;
+        transformTarget.style.transformOrigin = `${nx * 100}% ${ny * 100}%`;
+        transformTarget.style.transform = `scale(${ZOOM_SCALE})`;
     }
 
     function startZoom(e) {
@@ -150,8 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
         goesImage.releasePointerCapture?.(zoomPointerId);
         zoomActive = false;
         zoomPointerId = null;
-        zoomWrap.style.transform = 'scale(1)';
-        zoomWrap.style.transformOrigin = '';
+        transformTarget.style.transform = 'scale(1)';
+        transformTarget.style.transformOrigin = '';
     }
     
     // --- Loading and Initialization ---
@@ -234,8 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Full-image zoom: press-and-follow
     goesImage.addEventListener('pointerdown', (e) => {
         if (e.pointerType === 'touch' || e.pointerType === 'pen') startZoom(e);
-        // else startZoom(e); // enable for mouse if you want desktop testing
-        }, { passive: false });
+    }, { passive: false });
+    
 
     goesImage.addEventListener('pointermove', moveZoom, { passive: false });
     goesImage.addEventListener('pointerup', endZoom);
