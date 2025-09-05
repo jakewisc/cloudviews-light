@@ -6,28 +6,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const scrubber = document.getElementById('scrubber');
-    const scriptTag = document.getElementById('main-script');
-    const imageContainer = document.querySelector('.image-container');
-    const zoomWrap = document.getElementById('zoom-wrap');
-    const transformTarget = zoomWrap || goesImage; // wrapper preferred (avoids Safari blanking)
+    const scriptTag = document.getElementById('main-script'); 
 
     // --- Configuration ---
     const ANIMATION_FPS = 5;
     const FRAME_INTERVAL_MS = 1000 / ANIMATION_FPS;
     const LAST_FRAME_HOLD_TIME_MS = 1000;
     const JSON_PATH = scriptTag.dataset.regionJson;
-    // --- Full-image zoom config ---
-    const ZOOM_SCALE = 2.0; // tweak to taste (e.g., 1.9–2.2)
-    // Shrink the active control region by this inset on all sides (in CSS px)
-    const CONTROL_INSET_PX = 80; // try 60–120 to taste
 
     // --- State Variables ---
     let imagePaths = []; 
     let imageCache = {}; 
     let currentIndex = 0;
-    let isPlaying = true;
-    let zoomActive = false;
-    let zoomPointerId = null;
+    let isPlaying = true; 
 
     // --- State for requestAnimationFrame ---
     let animationFrameId;
@@ -112,55 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
         animationFrameId = requestAnimationFrame(runAnimationLoop);
     }
 
-    // --- Magnification Functions ---
-    
-    function applyZoomAt(e) {
-        const rect = transformTarget.getBoundingClientRect();
-        
-        // Build a smaller "control box" inside the visible area
-        const insetX = Math.min(CONTROL_INSET_PX, rect.width / 2 - 1);
-        const insetY = Math.min(CONTROL_INSET_PX, rect.height / 2 - 1);
-        const ctrlLeft = rect.left + insetX;
-        const ctrlTop = rect.top + insetY;
-        const ctrlWidth = Math.max(2, rect.width - 2 * insetX);
-        const ctrlHeight = Math.max(2, rect.height - 2 * insetY);
-        
-        // Clamp finger to the control box
-        const px = Math.max(ctrlLeft, Math.min(e.clientX, ctrlLeft + ctrlWidth));
-        const py = Math.max(ctrlTop, Math.min(e.clientY, ctrlTop + ctrlHeight));
-        
-        // Normalize within the control box to 0..1 and map to transform-origin
-        const nx = (px - ctrlLeft) / ctrlWidth;
-        const ny = (py - ctrlTop) / ctrlHeight;
-        
-        transformTarget.style.transformOrigin = `${nx * 100}% ${ny * 100}%`;
-        transformTarget.style.transform = `scale(${ZOOM_SCALE})`;
-    }
-
-    function startZoom(e) {
-        if (zoomActive) return;
-        zoomActive = true;
-        zoomPointerId = e.pointerId;
-        goesImage.setPointerCapture?.(zoomPointerId);
-        if (e.cancelable) e.preventDefault(); // extra safety on iOS
-        applyZoomAt(e);
-    }
-
-    function moveZoom(e) {
-        if (!zoomActive || e.pointerId !== zoomPointerId) return;
-        if (e.cancelable) e.preventDefault();
-        applyZoomAt(e);
-    }
-
-    function endZoom(e) {
-        if (!zoomActive || (e && e.pointerId !== zoomPointerId)) return;
-        goesImage.releasePointerCapture?.(zoomPointerId);
-        zoomActive = false;
-        zoomPointerId = null;
-        transformTarget.style.transform = 'scale(1)';
-        transformTarget.style.transformOrigin = '';
-    }
-    
     // --- Loading and Initialization ---
 
     async function loadAllImages() {
@@ -237,16 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
     prevBtn.addEventListener('click', prevFrame);
     nextBtn.addEventListener('click', nextFrame);
     scrubber.addEventListener('change', handleScrubberInput);
-
-    // Full-image zoom: press-and-follow
-    goesImage.addEventListener('pointerdown', (e) => {
-        if (e.pointerType === 'touch' || e.pointerType === 'pen') startZoom(e);
-    }, { passive: false });
-    
-
-    goesImage.addEventListener('pointermove', moveZoom, { passive: false });
-    goesImage.addEventListener('pointerup', endZoom);
-    goesImage.addEventListener('pointercancel', endZoom);
 
     fetchImages();
 });
