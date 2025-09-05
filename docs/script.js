@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scriptTag = document.getElementById('main-script'); 
 
     // --- Configuration ---
-    const ANIMATION_FPS = 6;
+    const ANIMATION_FPS = 5;
     const FRAME_INTERVAL_MS = 1000 / ANIMATION_FPS;
     const LAST_FRAME_HOLD_TIME_MS = 1000;
     const JSON_PATH = scriptTag.dataset.regionJson;
