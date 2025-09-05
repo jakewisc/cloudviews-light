@@ -27,6 +27,9 @@ h1 {
     margin-bottom: 20px;
     position: relative;
     overflow: hidden;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Wrapper that we transform instead of the <img> */
@@ -36,27 +39,21 @@ h1 {
     will-change: transform;
     transform: translateZ(0);
     backface-visibility: hidden;
-
-    /* Move visual chrome here (important for Safari) */
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* The image itself: no border/shadow while we transform the wrapper */
 #goes-image {
+    display: block; /* avoid inline-img gaps */
     max-width: 90vw;
     max-height: 65vh;
     height: auto;
     width: auto;
-    display: none;            /* shown after load */
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-
-    touch-action: none;       /* prevent page scroll while dragging */
+    touch-action: none;
     user-select: none;
     -webkit-user-drag: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 /* Loading Message Style */
