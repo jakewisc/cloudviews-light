@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scrubber = document.getElementById('scrubber');
     const scriptTag = document.getElementById('main-script');
     const imageContainer = document.querySelector('.image-container');
+    const zoomWrap = document.getElementById('zoom-wrap');
 
     // --- Configuration ---
     const ANIMATION_FPS = 5;
@@ -111,12 +112,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Magnification Functions ---
     
     function applyZoomAt(e) {
-        const rect = goesImage.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        // Set pivot to the touched point so that point stays under the finger
-        goesImage.style.transformOrigin = `${x}px ${y}px`;
-        goesImage.style.transform = `scale(${ZOOM_SCALE})`;
+        const rect = zoomWrap.getBoundingClientRect();
+        
+        // Position relative to wrapper (which we’re transforming)
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+        
+        // Clamp within bounds to avoid Safari bugs with negative origins
+        x = Math.max(0, Math.min(x, rect.width));
+        y = Math.max(0, Math.min(y, rect.height));
+        
+        // Use percentages so it’s stable even while scaled
+        const ox = (x / rect.width) * 100;
+        const oy = (y / rect.height) * 100;
+        
+        zoomWrap.style.transformOrigin = `${ox}% ${oy}%`;
+        zoomWrap.style.transform = `scale(${ZOOM_SCALE})`;
     }
 
     function startZoom(e) {
@@ -124,11 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
         zoomActive = true;
         zoomPointerId = e.pointerId;
         goesImage.setPointerCapture?.(zoomPointerId);
+        if (e.cancelable) e.preventDefault(); // extra safety on iOS
         applyZoomAt(e);
     }
 
     function moveZoom(e) {
         if (!zoomActive || e.pointerId !== zoomPointerId) return;
+        if (e.cancelable) e.preventDefault();
         applyZoomAt(e);
     }
 
@@ -137,8 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
         goesImage.releasePointerCapture?.(zoomPointerId);
         zoomActive = false;
         zoomPointerId = null;
-        goesImage.style.transform = 'scale(1)';
-        goesImage.style.transformOrigin = ''; // reset to default
+        zoomWrap.style.transform = 'scale(1)';
+        zoomWrap.style.transformOrigin = '';
     }
     
     // --- Loading and Initialization ---
@@ -220,14 +233,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Full-image zoom: press-and-follow
     goesImage.addEventListener('pointerdown', (e) => {
-        // Default: enable for touch and pen; uncomment to enable mouse for desktop testing
         if (e.pointerType === 'touch' || e.pointerType === 'pen') startZoom(e);
-        // else startZoom(e);
-    });
-    goesImage.addEventListener('pointermove', moveZoom);
+        // else startZoom(e); // enable for mouse if you want desktop testing
+        }, { passive: false });
+
+    goesImage.addEventListener('pointermove', moveZoom, { passive: false });
     goesImage.addEventListener('pointerup', endZoom);
     goesImage.addEventListener('pointercancel', endZoom);
-    // We do not end on pointerleave because we use pointer capture
 
     fetchImages();
 });
