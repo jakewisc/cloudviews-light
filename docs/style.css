@@ -23,29 +23,22 @@ h1 {
 
 /* --- Image Container and Scaling --- */
 .image-container {
-    /* Center the container and limit its size relative to the viewport */
     margin-bottom: 20px;
     position: relative;
-    /* --- NEW: Prevent page scroll when interacting with the image --- */
     touch-action: none; 
-    /* --- NEW: Clip the zoomed image so it doesn't spill out --- */
     overflow: hidden;
-    /* --- NEW: Match the border-radius of the image for a clean look --- */
     border-radius: 8px;
 }
 
 #goes-image {
     max-width: 90vw;
     max-height: 65vh;
-    height: auto; /* Maintain aspect ratio */
-    width: auto; /* Maintain aspect ratio */
-
+    height: auto;
+    width: auto;
     display: none;
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    
-    /* --- NEW: Ensure the image is rendered on top of other elements if needed --- */
     position: relative; 
     z-index: 1;
 }
@@ -76,7 +69,7 @@ h1 {
 .controls-container {
     margin-bottom: 40px;
     display: none;
-    gap: 15px; /* Space between buttons */
+    gap: 15px;
     justify-content: center;
 }
 
@@ -87,13 +80,13 @@ h1 {
     font-size: 1em;
     cursor: pointer;
     transition: background-color 0.3s, opacity 0.3s;
-    background-color: #2280de; /* Main Blue */
+    background-color: #2280de;
     color: white;
     touch-action: manipulation;
 }
 
 .controls-container button:hover {
-    background-color: #134c92; /* Dark Blue */
+    background-color: #134c92;
 }
 
 .controls-container button:disabled {
@@ -101,12 +94,8 @@ h1 {
     cursor: default;
 }
 
-/* --- NEW: Zoom Feature Styles --- */
+/* --- Zoom Feature Styles --- */
 .zoom-wrapper {
-    /* The wrapper will be the same size as the image inside it */
     display: inline-block;
-    line-height: 0; /* Remove any extra space below the image */
-    
-    /* Smooth transition for zooming in and out */
-    transition: transform 0.15s ease-out, transform-origin 0.05s linear;
+    line-height: 0;
 }
