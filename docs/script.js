@@ -8,27 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const scrubber = document.getElementById('scrubber');
     const scriptTag = document.getElementById('main-script');
     const imageContainer = document.querySelector('.image-container');
-    const magnifier = document.getElementById('magnifier');
 
     // --- Configuration ---
     const ANIMATION_FPS = 5;
     const FRAME_INTERVAL_MS = 1000 / ANIMATION_FPS;
     const LAST_FRAME_HOLD_TIME_MS = 1000;
     const JSON_PATH = scriptTag.dataset.regionJson;
-    // --- Magnifier Config ---
-    const MAG_ZOOM = 2.5;         // how much to zoom the region inside the lens
-    const MAG_DIAMETER = 180;     // must match CSS width/height
-    const MAG_RADIUS = MAG_DIAMETER / 2;
-    // Offset the lens so your finger doesn't hide the focal point
-    const MAG_OFFSET = { x: 16, y: -(MAG_RADIUS + 16) }; // right and above finger
+    // --- Full-image zoom config ---
+    const ZOOM_SCALE = 2.0; // tweak to taste (e.g., 1.9–2.2)
 
     // --- State Variables ---
     let imagePaths = []; 
     let imageCache = {}; 
     let currentIndex = 0;
     let isPlaying = true;
-    let activePointerId = null;
-    let magnifierActive = false;
+    let zoomActive = false;
+    let zoomPointerId = null;
 
     // --- State for requestAnimationFrame ---
     let animationFrameId;
@@ -86,15 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayFrame(index) {
-      const path = imagePaths[index];
-      const cachedImage = imageCache[path];
-      if (cachedImage) {
-          goesImage.src = cachedImage.src;
-          if (magnifierActive) {
-            // Keep the lens showing the same frame as the main image
-            updateMagnifierSource();
-          }
-      }
+        const path = imagePaths[index];
+        const cachedImage = imageCache[path];
+        if (cachedImage) {
+            goesImage.src = cachedImage.src; 
+        }
     }
 
     /**
@@ -117,92 +108,39 @@ document.addEventListener('DOMContentLoaded', () => {
         animationFrameId = requestAnimationFrame(runAnimationLoop);
     }
 
-    function clamp(value, min, max) {
-      return Math.max(min, Math.min(max, value));
-    }
+    // --- Magnification Functions ---
     
-    // Keep the lens image in sync with the current animation frame
-    function updateMagnifierSource() {
-      const path = imagePaths[currentIndex];
-      if (!path) return;
-      magnifier.style.backgroundImage = `url(${path})`;
-    
-      // Use the preloaded image to compute background size
-      const img = imageCache[path];
-      const nW = img?.naturalWidth || goesImage.naturalWidth || 0;
-      const nH = img?.naturalHeight || goesImage.naturalHeight || 0;
-    
-      if (nW && nH) {
-        magnifier.style.backgroundSize = `${nW * MAG_ZOOM}px ${nH * MAG_ZOOM}px`;
-      }
-    }
-    
-    // Position the lens and set background position so the touched point is centered
-    function moveMagnifier(clientX, clientY) {
-      const imgRect = goesImage.getBoundingClientRect();
-      const containerRect = imageContainer.getBoundingClientRect();
-    
-      // Relative to displayed image
-      let xRelImg = clientX - imgRect.left;
-      let yRelImg = clientY - imgRect.top;
-    
-      // Clamp within the image rectangle
-      xRelImg = clamp(xRelImg, 0, imgRect.width);
-      yRelImg = clamp(yRelImg, 0, imgRect.height);
-    
-      // Natural-image coordinates
-      const path = imagePaths[currentIndex];
-      const img = imageCache[path];
-      const nW = img?.naturalWidth || goesImage.naturalWidth || 0;
-      const nH = img?.naturalHeight || goesImage.naturalHeight || 0;
-      if (!nW || !nH) return;
-    
-      const scaleX = nW / imgRect.width;
-      const scaleY = nH / imgRect.height;
-    
-      const nx = xRelImg * scaleX;
-      const ny = yRelImg * scaleY;
-    
-      // Set background so the touched point is at the center of the lens
-      const bgX = -(nx * MAG_ZOOM - MAG_RADIUS);
-      const bgY = -(ny * MAG_ZOOM - MAG_RADIUS);
-      magnifier.style.backgroundPosition = `${bgX}px ${bgY}px`;
-    
-      // Position lens relative to container, offset to avoid finger overlap
-      let centerX = (clientX - containerRect.left) + MAG_OFFSET.x;
-      let centerY = (clientY - containerRect.top) + MAG_OFFSET.y;
-    
-      // Keep lens fully inside the container
-      let left = clamp(centerX - MAG_RADIUS, 0, containerRect.width - MAG_DIAMETER);
-      let top  = clamp(centerY - MAG_RADIUS, 0, containerRect.height - MAG_DIAMETER);
-    
-      magnifier.style.left = `${left}px`;
-      magnifier.style.top = `${top}px`;
-    }
-    
-    function showMagnifier(e) {
-      if (magnifierActive) return;
-      activePointerId = e.pointerId;
-      magnifierActive = true;
-      goesImage.setPointerCapture?.(activePointerId);
-      updateMagnifierSource();
-      magnifier.style.display = 'block';
-      moveMagnifier(e.clientX, e.clientY);
-    }
-    
-    function updateMagnifier(e) {
-      if (!magnifierActive || e.pointerId !== activePointerId) return;
-      moveMagnifier(e.clientX, e.clientY);
-    }
-    
-    function hideMagnifier(e) {
-      if (!magnifierActive || (e && e.pointerId !== activePointerId)) return;
-      goesImage.releasePointerCapture?.(activePointerId);
-      activePointerId = null;
-      magnifierActive = false;
-      magnifier.style.display = 'none';
+    function applyZoomAt(e) {
+        const rect = goesImage.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        // Set pivot to the touched point so that point stays under the finger
+        goesImage.style.transformOrigin = `${x}px ${y}px`;
+        goesImage.style.transform = `scale(${ZOOM_SCALE})`;
     }
 
+    function startZoom(e) {
+        if (zoomActive) return;
+        zoomActive = true;
+        zoomPointerId = e.pointerId;
+        goesImage.setPointerCapture?.(zoomPointerId);
+        applyZoomAt(e);
+    }
+
+    function moveZoom(e) {
+        if (!zoomActive || e.pointerId !== zoomPointerId) return;
+        applyZoomAt(e);
+    }
+
+    function endZoom(e) {
+        if (!zoomActive || (e && e.pointerId !== zoomPointerId)) return;
+        goesImage.releasePointerCapture?.(zoomPointerId);
+        zoomActive = false;
+        zoomPointerId = null;
+        goesImage.style.transform = 'scale(1)';
+        goesImage.style.transformOrigin = ''; // reset to default
+    }
+    
     // --- Loading and Initialization ---
 
     async function loadAllImages() {
@@ -280,21 +218,16 @@ document.addEventListener('DOMContentLoaded', () => {
     nextBtn.addEventListener('click', nextFrame);
     scrubber.addEventListener('change', handleScrubberInput);
 
-    // Magnifier pointer events (works on iOS/Android + desktop)
+    // Full-image zoom: press-and-follow
     goesImage.addEventListener('pointerdown', (e) => {
-      // Only show by default for touch/pen; allow mouse too if you want
-      if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-        showMagnifier(e);
-      }
-      // If you also want to support mouse: uncomment next line
-      // else showMagnifier(e);
+        // Default: enable for touch and pen; uncomment to enable mouse for desktop testing
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') startZoom(e);
+        // else startZoom(e);
     });
-    
-    goesImage.addEventListener('pointermove', updateMagnifier);
-    goesImage.addEventListener('pointerup', hideMagnifier);
-    goesImage.addEventListener('pointercancel', hideMagnifier);
-    // Optional: if you want to hide lens when the pointer leaves the image
-    goesImage.addEventListener('pointerleave', hideMagnifier);
+    goesImage.addEventListener('pointermove', moveZoom);
+    goesImage.addEventListener('pointerup', endZoom);
+    goesImage.addEventListener('pointercancel', endZoom);
+    // We do not end on pointerleave because we use pointer capture
 
     fetchImages();
 });
