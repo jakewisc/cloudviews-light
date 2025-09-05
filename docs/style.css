@@ -26,34 +26,18 @@ h1 {
     /* Center the container and limit its size relative to the viewport */
     margin-bottom: 20px;
     position: relative;
-    overflow: hidden;
+}
+
+#goes-image {
+    max-width: 90vw;
+    max-height: 65vh;
+    height: auto; /* Maintain aspect ratio */
+    width: auto; /* Maintain aspect ratio */
+
+    display: none;
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Wrapper that we transform instead of the <img> */
-#zoom-wrap {
-    display: inline-block;
-    position: relative;
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-}
-
-/* The image itself: no border/shadow while we transform the wrapper */
-#goes-image {
-    display: block; /* avoid inline-img gaps */
-    max-width: 90vw;
-    max-height: 65vh;
-    height: auto;
-    width: auto;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-drag: none;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
 }
 
 /* Loading Message Style */
