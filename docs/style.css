@@ -38,6 +38,28 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    
+    /* Let the image capture pointer events without scrolling the page while touching */
+    touch-action: none;          /* important for smooth finger tracking */
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Circular magnifier lens that floats above the image */
+#magnifier {
+  position: absolute;
+  display: none;               /* shown while touching */
+  width: 180px;                /* default size (diameter) — tweak as you like */
+  height: 180px;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;        /* let touches pass through to the image */
+  z-index: 2;
+  background-repeat: no-repeat;
+  background-position: 0 0;    /* updated dynamically */
+  box-shadow:
+    0 6px 16px rgba(0,0,0,0.35),
+    inset 0 0 0 2px rgba(255,255,255,0.85);
 }
 
 /* Loading Message Style */
