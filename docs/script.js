@@ -1,5 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Tunables ---
+    const ZOOM_SCALE = 2.0;
+    const CONTROL_INSET_PX = 80;
+    const ALLOW_MOUSE_INPUT = true;
+
     // --- Elements ---
+    const imageContainer = document.querySelector('.image-container'); // Get the container
     const goesImage = document.getElementById('goes-image');
     const loadingMessage = document.getElementById('loading-message');
     const playPauseBtn = document.getElementById('play-pause-btn');
@@ -23,6 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State for requestAnimationFrame ---
     let animationFrameId;
     let lastFrameTime = 0;
+    
+    // --- Zoom Feature State ---
+    let zoomWrapper; // To be created dynamically
+    let isZooming = false;
 
     // --- Animation Control Functions ---
     
@@ -84,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * REFACTORED: Manages the animation loop using requestAnimationFrame.
+     * Manages the animation loop using requestAnimationFrame.
      * @param {DOMHighResTimeStamp} currentTime - Provided by requestAnimationFrame
      */
     function runAnimationLoop(currentTime) {
@@ -173,6 +183,79 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI(newIndex);
     }
     
+    // --- Zoom Feature ---
+
+    function setupZoomFeature() {
+        // Create the wrapper and move the image inside it
+        zoomWrapper = document.createElement('div');
+        zoomWrapper.className = 'zoom-wrapper';
+        imageContainer.insertBefore(zoomWrapper, goesImage);
+        zoomWrapper.appendChild(goesImage);
+
+        // Add pointer event listeners to the container
+        imageContainer.addEventListener('pointerdown', handlePointerDown);
+        imageContainer.addEventListener('pointermove', handlePointerMove);
+        imageContainer.addEventListener('pointerup', handlePointerUp);
+        imageContainer.addEventListener('pointercancel', handlePointerUp); // Also reset on cancel
+    }
+
+    function handlePointerDown(event) {
+        if (!ALLOW_MOUSE_INPUT && event.pointerType === 'mouse') return;
+        if (!event.isPrimary) return; // Ignore multi-touch
+
+        event.preventDefault();
+        isZooming = true;
+        imageContainer.setPointerCapture(event.pointerId); // Capture pointer for consistent events
+        applyZoom(event);
+    }
+    
+    function handlePointerMove(event) {
+        if (!isZooming) return;
+        applyZoom(event);
+    }
+
+    function handlePointerUp(event) {
+        if (!isZooming) return;
+        
+        isZooming = false;
+        imageContainer.releasePointerCapture(event.pointerId);
+        resetZoom();
+    }
+
+    function applyZoom(event) {
+        const rect = goesImage.getBoundingClientRect();
+
+        // 1. Calculate pointer position relative to the image
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        // 2. Define the virtual control box
+        const inset = CONTROL_INSET_PX;
+        const controlBoxWidth = Math.max(1, rect.width - 2 * inset);
+        const controlBoxHeight = Math.max(1, rect.height - 2 * inset);
+        
+        // 3. Clamp the pointer position to the virtual control box
+        const clampedX = Math.max(inset, Math.min(x, rect.width - inset));
+        const clampedY = Math.max(inset, Math.min(y, rect.height - inset));
+
+        // 4. Map the clamped position to a 0-1 range for transform-origin
+        // This makes it so moving your finger within the smaller box can still reach the whole image.
+        const originX = (clampedX - inset) / controlBoxWidth;
+        const originY = (clampedY - inset) / controlBoxHeight;
+        
+        // 5. Apply the styles
+        zoomWrapper.style.transformOrigin = `${originX * 100}% ${originY * 100}%`;
+        zoomWrapper.style.transform = `scale(${ZOOM_SCALE})`;
+    }
+
+    function resetZoom() {
+        // Clearing the styles will make it revert to the CSS definition,
+        // triggering the transition smoothly.
+        zoomWrapper.style.transform = '';
+        zoomWrapper.style.transformOrigin = '';
+    }
+
+
     // --- Initialization & Event Listeners ---
     
     playPauseBtn.addEventListener('click', togglePlayPause);
@@ -180,5 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
     nextBtn.addEventListener('click', nextFrame);
     scrubber.addEventListener('change', handleScrubberInput);
 
+    setupZoomFeature(); // Set up the zoom wrapper and listeners
     fetchImages();
 });
