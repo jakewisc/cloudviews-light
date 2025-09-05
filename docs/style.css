@@ -29,23 +29,34 @@ h1 {
     overflow: hidden;
 }
 
-#goes-image {
-    max-width: 90vw;
-    max-height: 65vh;
-    height: auto; /* Maintain aspect ratio */
-    width: auto; /* Maintain aspect ratio */
+/* Wrapper that we transform instead of the <img> */
+#zoom-wrap {
+    display: inline-block;
+    position: relative;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 
-    display: none;
+    /* Move visual chrome here (important for Safari) */
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    
-    /* Let the image capture pointer events without scrolling the page while touching */
-    touch-action: none;         /* prevent page scroll while dragging */
+}
+
+/* The image itself: no border/shadow while we transform the wrapper */
+#goes-image {
+    max-width: 90vw;
+    max-height: 65vh;
+    height: auto;
+    width: auto;
+    display: none;            /* shown after load */
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+
+    touch-action: none;       /* prevent page scroll while dragging */
     user-select: none;
     -webkit-user-drag: none;
-    will-change: transform;     /* hint for compositor */
-    transform: translateZ(0);   /* force its own layer for smoother scaling */
 }
 
 /* Loading Message Style */
