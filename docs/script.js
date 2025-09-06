@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Tunables ---
-    const ZOOM_SCALE = 2.1;
+    const ZOOM_SCALE = 2.2;
     const CONTROL_INSET_PX = 80;
     const ALLOW_MOUSE_INPUT = true;
 
