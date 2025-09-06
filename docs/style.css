@@ -38,7 +38,6 @@ h1 {
     display: none;
     border: 1px solid #ccc;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     position: relative; 
     z-index: 1;
 }
