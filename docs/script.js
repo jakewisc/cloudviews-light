@@ -266,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     prevBtn.addEventListener('click', prevFrame);
     nextBtn.addEventListener('click', nextFrame);
     scrubber.addEventListener('change', handleScrubberInput);
+    goesImage.addEventListener('contextmenu', (event) => event.preventDefault()); // Prevent default context menu
 
     setupZoomFeature(); // Set up the zoom wrapper and listeners
     fetchImages();
