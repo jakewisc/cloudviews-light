@@ -13,8 +13,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # --- Constants ---
 IMAGE_SIZE_FILTER = "2400x2400.jpg"
-MAX_IMAGES_TO_KEEP = 42  # 3.5 hour sequence
-WEBP_QUALITY = 90  # WebP compression quality (0-100)
+MAX_IMAGES_TO_KEEP = 38  # 3.15 hour sequence
+WEBP_QUALITY = 92  # WebP compression quality (0-100)
 MAX_WORKERS = 10   # Number of concurrent download threads
 
 # --- Cropping Configuration ---
