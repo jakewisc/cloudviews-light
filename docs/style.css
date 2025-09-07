@@ -37,7 +37,6 @@ h1 {
     width: auto;
     display: none;
     border: 1px solid #ccc;
-    border-radius: 8px;
     position: relative; 
     z-index: 1;
     -webkit-touch-callout: none; /* Prevents callout menu on iOS */
