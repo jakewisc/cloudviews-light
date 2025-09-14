@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ALLOW_MOUSE_INPUT = true;
 
     // --- Elements ---
-    const imageContainer = document.querySelector('.image-container'); // Get the container
+    const imageContainer = document.querySelector('.image-container');
     const goesImage = document.getElementById('goes-image');
     const loadingMessage = document.getElementById('loading-message');
     const playPauseBtn = document.getElementById('play-pause-btn');
@@ -258,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
         zoomWrapper.style.transform = '';
         zoomWrapper.style.transformOrigin = '';
     }
-
 
     // --- Initialization & Event Listeners ---
     
